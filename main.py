@@ -23,8 +23,8 @@ class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
 # Better API key management (use environment variables or config file)
-os.environ["GOOGLE_API_KEY"] = "AIzaSyD__Jvq_nu41rDuSk_9uSt1MiYMKv0Nsy4"
-os.environ["TAVILY_API_KEY"] = "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"
+os.environ["GOOGLE_API_KEY"] = "your_google_api_key"
+os.environ["TAVILY_API_KEY"] = "your_tavily_api_key"
 
 # Initialize LLM with error handling
 try:
@@ -121,7 +121,7 @@ def grade_document(state) -> Literal["generate", "rewrite"]:
         messages = state["messages"]
         if not messages:
             return "rewrite"
-        
+
         last_message = messages[-1]
         question = messages[0].content
 
@@ -140,7 +140,7 @@ def grade_document(state) -> Literal["generate", "rewrite"]:
             return "generate"
         else:
             return "rewrite"
-            
+
     except Exception as e:
         print(f"Error in grade_document: {e}")
         return "generate"  # Default to generate on error
@@ -148,7 +148,7 @@ def grade_document(state) -> Literal["generate", "rewrite"]:
 def agent(state):
     """
     Invokes the agent model to generate a response based on the current state.
-    
+
     Args:
         state (messages): The current state
 
@@ -157,16 +157,16 @@ def agent(state):
     """
     messages = state["messages"]
     print("In agent state")
-    
+
 
     try:
         llm_with_tools = llm.bind_tools(tools)
         response = llm_with_tools.invoke(messages)
         print(f"Agent response: {response}")
-        
+
         # Fix the key name bug: "message:" -> "messages"
         return {"messages": [response]}
-        
+
     except Exception as e:
         print(f"Error in agent: {e}")
         error_msg = AIMessage(content=f"I encountered an error: {str(e)}")
@@ -205,12 +205,12 @@ Formulate an improved question:"""
 
         response = llm.invoke(msg)
         print(f"Rewritten query: {response.content}")
-        
+
         # Fix the key name bug: "message" -> "messages"
         # Replace the original question with the rewritten one
         new_message = HumanMessage(content=response.content)
         return {"messages": [new_message]}
-        
+
     except Exception as e:
         print(f"Error in rewrite: {e}")
         return {"messages": [messages[0]]}  # Return original question
@@ -259,11 +259,11 @@ Answer:""",
 
         response = chain.invoke({"question": question, "context": context})
         print(f"Generated response: {response}")
-        
+
         # Fix the key name bug and return proper message format
         ai_message = AIMessage(content=response)
         return {"messages": [ai_message]}
-        
+
     except Exception as e:
         print(f"Error in generate: {e}")
         error_response = AIMessage(content="I apologize, but I encountered an error while generating a response.")
@@ -314,13 +314,13 @@ graph = builder.compile()
 # Test the workflow with better error handling
 def test_workflow():
     import pprint
-    
+
     inputs = {
         "messages": [
             HumanMessage(content="how to setup conversation memory in langraph?"),
         ]
     }
-    
+
     try:
         print("Starting workflow...")
         for output in graph.stream(inputs):
